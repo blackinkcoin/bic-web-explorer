@@ -209,6 +209,55 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
+      {/* 2b. THE 9 METHODOLOGIES SPOTLIGHT */}
+      <section className="relative overflow-hidden rounded-3xl glass-panel p-6 sm:p-8 border border-neon-cyan/30 bg-gradient-to-r from-neon-cyan/10 via-black/40 to-neon-pink/10 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-cyan/15 border border-neon-cyan/30 text-neon-cyan text-xs font-mono">
+              <Sparkles className="w-3.5 h-3.5 text-neon-pink" />
+              <span>{lang === 'es' ? 'METODOLOGÍAS DEL PROTOCOLO' : 'PROTOCOL METHODOLOGIES'}</span>
+            </div>
+            <h2 className="font-orbitron text-xl sm:text-2xl lg:text-3xl font-bold text-white">
+              {lang === 'es' ? '9 Grandes Metodologías Explicadas para Humanos' : '9 Core Methodologies Explained for Humans'}
+            </h2>
+            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">
+              {lang === 'es' 
+                ? 'Descubre cómo Black Ink Coin elimina las granjas industriales millonarias con el Sueldo Base 1/N, el Bote Acumulativo Rollover, el Escudo Anti-Sniper, el Consorcio P2P 50/50 y la Privacidad Militar Shielded.'
+                : 'Discover how Black Ink Coin ends mining monopolies through 1/N Base Pay, Rolling Jackpots, Anti-Sniper Filters, 50/50 P2P Consortiums, and Zero-Knowledge Privacy.'}
+            </p>
+          </div>
+
+          <Link
+            to="/mining"
+            onClick={() => sound.playClick()}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-neon-cyan to-white text-black font-orbitron text-xs font-bold tracking-wider hover:opacity-95 transition-all shadow-glow-cyan flex items-center justify-center gap-2 shrink-0 self-start lg:self-auto"
+          >
+            <span>{lang === 'es' ? 'Ver Explicación Completa' : 'Explore Methodologies'}</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* 4 Key Highlight Badges */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 font-mono text-xs">
+          <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
+            <div className="text-neon-cyan font-bold">1. Sueldo Base 70%</div>
+            <div className="text-[11px] text-gray-400">{lang === 'es' ? '1 humano = 1 parte igual' : '1 human = 1 exact share'}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
+            <div className="text-neon-gold font-bold">2. Bote Rollover</div>
+            <div className="text-[11px] text-gray-400">{lang === 'es' ? 'Jackpot que se acumula' : 'Rolling unawarded pot'}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
+            <div className="text-neon-pink font-bold">3. Escudo Anti-Sniper</div>
+            <div className="text-[11px] text-gray-400">{lang === 'es' ? 'Permanencia obligatoria' : 'Compulsory duration'}</div>
+          </div>
+          <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
+            <div className="text-neon-purple font-bold">4. Consorcio 50/50</div>
+            <div className="text-[11px] text-gray-400">{lang === 'es' ? 'Comisiones a medias' : '50/50 fee sharing'}</div>
+          </div>
+        </div>
+      </section>
+
       {/* 3. SYMBIOTIC ARCHITECTURE (Miners & Guardians) */}
       <section className="space-y-6">
         <div className="text-center max-w-3xl mx-auto space-y-2 px-2">
