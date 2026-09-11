@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { HashRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { CyberCanvas } from './components/CyberCanvas';
 import { Navbar } from './components/Navbar';
 import { BlockModal } from './components/BlockModal';
@@ -73,7 +73,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <HashRouter>
+    <BrowserRouter>
       <div className="relative min-h-screen flex flex-col justify-between selection:bg-neon-cyan/30 selection:text-neon-cyan">
         {/* Dynamic Background */}
         <CyberCanvas />
@@ -209,7 +209,7 @@ export const App: React.FC = () => {
           lang={lang}
         />
       </div>
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 export default App;
