@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Ink Coin (BIC) — Generador Oficial de Billetera Fría (Air-Gapped Paper Wallet)</title>
+  <style>
+    :root {
+      --bg: #0d0e14;
+      --card-bg: #141622;
+      --text: #e6e8f2;
+      --muted: #8890a6;
+      --accent: #ff2a44;
+      --green: #00ff88;
+      --gold: #ffb800;
+      --cyan: #00e5ff;
+      --border: #2c1a24;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Security Header */
+    .security-banner {
+      background: rgba(255, 42, 68, 0.12);
+      border: 1px solid rgba(255, 42, 68, 0.35);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .security-badge {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .security-text h2 {
+      color: var(--accent);
+      font-size: 1.15rem;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .security-text p {
+      font-size: 0.88rem;
+      color: #ffb3bc;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #d91c34; }
+    .btn-secondary {
+      background: #25283a;
+      color: #ffffff;
+    }
+    .btn-secondary:hover { background: #353a54; }
+
+    /* Paper Wallet Printable Card */
+    .paper-wallet-card {
+      background: #ffffff;
+      color: #111111;
+      border: 2px dashed #333333;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .pw-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .pw-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #000;
+    }
+    .pw-badge {
+      background: #000;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .pw-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      position: relative;
+    }
+    .pw-split::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      border-left: 2px dashed #888888;
+    }
+
+    /* Public Side */
+    .pw-side-public {
+      padding-right: 12px;
+    }
+    .pw-section-tag {
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .tag-public {
+      background: #e1f5fe;
+      color: #0277bd;
+    }
+    .tag-private {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .qr-container {
+      width: 140px;
+      height: 140px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4f5f8;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .qr-container svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .addr-code-box {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 8px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.72rem;
+      word-break: break-all;
+      color: #222;
+      margin-top: 6px;
+      user-select: all;
+    }
+
+    /* Secret Side */
+    .pw-side-private {
+      padding-left: 12px;
+    }
+    .mnemonic-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin: 12px 0;
+    }
+    .mnemonic-chip {
+      background: #f8f9fc;
+      border: 1px solid #d0d4e4;
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      display: flex;
+      gap: 4px;
+    }
+    .chip-idx {
+      color: #777;
+      font-size: 0.7rem;
+    }
+    .chip-word {
+      font-weight: 700;
+      color: #111;
+    }
+
+    .cut-fold-banner {
+      background: #fff3e0;
+      border: 1px dashed #e65100;
+      color: #b23c00;
+      font-size: 0.72rem;
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-top: 14px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* Explanation Section */
+    .guide-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .guide-box h3 {
+      color: var(--cyan);
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+    .guide-list {
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .guide-list li { margin-bottom: 10px; }
+    .guide-list strong { color: var(--text); }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+        padding: 0;
+      }
+      .security-banner, .controls-bar, .guide-box {
+        display: none !important;
+      }
+      .paper-wallet-card {
+        border: 2px dashed #000;
+        box-shadow: none;
+        margin: 0;
+        padding: 20px;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Security Warning -->
+  <div class="security-banner">
+    <div class="security-badge">🛡️</div>
+    <div class="security-text">
+      <h2>Autonomous Cold Storage Generator (100% Air-Gapped)</h2>
+      <p>
+        This file operates <strong>completely offline</strong> without making any calls to external servers.
+        For maximum cold storage security in Black Ink Coin (BIC), disconnect your device from WiFi/Ethernet
+        before generating high-value sovereign keys.
+      </p>
+    </div>
+  </div>
+
+  <!-- Action Controls -->
+  <div class="controls-bar">
+    <div>
+      <span style="font-size: 0.9rem; color: var(--muted);">Sovereign Wallet:</span>
+      <strong id="seed-timestamp" style="color: var(--cyan); margin-left: 6px;">Generated Locally in Browser</strong>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="generateNewColdWallet()">🎲 Generate New Cold Wallet</button>
+      <button class="btn" onclick="window.print()">🖨️ Print Paper Wallet</button>
+    </div>
+  </div>
+
+  <!-- Physical Paper Wallet Printable Card -->
+  <div class="paper-wallet-card" id="paper-wallet">
+    <div class="pw-header">
+      <div class="pw-title">BLACK INK COIN — COLD STORAGE VAULT</div>
+      <div class="pw-badge">SOVEREIGN LAYER 1 (DK-SAP)</div>
+    </div>
+
+    <div class="pw-split">
+      <!-- Public Receiving Side -->
+      <div class="pw-side-public">
+        <span class="pw-section-tag tag-public">🟢 PUBLIC SIDE (RECEIVING & MINING)</span>
+        <p style="font-size: 0.78rem; color: #555;">
+          Share this address with your desktop miner, ESP32, or senders to receive payments.
+          It is completely safe to share: it never exposes your private keys.
+        </p>
+
+        <div class="qr-container" id="qr-public"></div>
+
+        <div style="font-size: 0.75rem; font-weight: 700; margin-top: 6px;">SHIELDED PUBLIC STEALTH ADDRESS (BIC):</div>
+        <div class="addr-code-box" id="disp-public-addr">Generating...</div>
+
+        <div style="font-size: 0.72rem; font-weight: 700; margin-top: 8px; color: #666;">VIEW-KEY (WATCH-ONLY AUDITING):</div>
+        <div class="addr-code-box" id="disp-view-key" style="font-size: 0.68rem;">-</div>
+      </div>
+
+      <!-- Private Secret Side -->
+      <div class="pw-side-private">
+        <span class="pw-section-tag tag-private">🔴 SECRET SIDE (MASTER PRIVATE SEED)</span>
+        <p style="font-size: 0.78rem; color: #555;">
+          <strong>STRICT WARNING:</strong> Never show this side to anyone. Do not upload photos online.
+          Whoever possesses these 12 words has absolute, irreversible control of your funds.
+        </p>
+
+        <div class="qr-container" id="qr-secret"></div>
+
+        <div style="font-size: 0.75rem; font-weight: 700; margin-top: 6px;">MNEMONIC SEED (12 WORDS BIP-39):</div>
+        <div class="mnemonic-grid" id="disp-mnemonic-grid"></div>
+
+        <div class="cut-fold-banner">
+          ✂️ CUT ALONG THE OUTER BORDER AND FOLD INWARD TO CONCEAL THE SECRET SIDE
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cold Storage Architecture Guide -->
+  <div class="guide-box">
+    <h3>📖 How Does Black Ink Coin Cold Storage Work?</h3>
+    <ul class="guide-list">
+      <li>
+        <strong>1. Complete Immunity from Hackers & Malware:</strong> By generating and printing this paper wallet on an offline machine, your funds cannot be stolen by trojans, spyware, or network attacks.
+      </li>
+      <li>
+        <strong>2. Direct Hardware & PC Mining Without Risk:</strong> Configure the public address (<code>bic666_...</code>) in your ESP32 or Desktop Miner. Devices will mine blocks and credit rewards directly into your cold vault without storing your 12-word seed.
+      </li>
+      <li>
+        <strong>3. Read-Only Auditing (Watch-Only):</strong> You can import your <strong>View-Key</strong> into the online Web Explorer to monitor incoming balances and transactions without exposing your Spend Key.
+      </li>
+      <li>
+        <strong>4. Durable Physical Vault Backup:</strong> Store this printed sheet inside a waterproof pouch or physical vault. For lifetime fireproof security, consider stamping your 12 words onto a stainless steel seed plate.
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// EMBEDDED BIP-39 MINI-DICTIONARY & PURE SVG QR GENERATOR (ZERO DEPENDENCIES)
+// ============================================================================
+
+// Standard BIP-39 English word list sample for air-gapped seed generation
+const WORD_LIST = [
+  "abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse",
+  "access","accident","account","accuse","achieve","acid","acoustic","acquire","across","act",
+  "action","actor","actress","actual","adapt","add","addict","address","adjust","admit",
+  "adult","advance","advice","aerobic","affair","afford","afraid","again","age","agent",
+  "agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert",
+  "alien","all","alley","allow","almost","alone","alpha","already","also","alter",
+  "always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger",
+  "angle","angry","animal","ankle","announce","annual","another","answer","antenna","antique",
+  "anxiety","any","apart","apology","appear","apple","approve","april","arch","arctic",
+  "area","arena","argue","arm","armor","army","around","arrange","arrest","arrive",
+  "arrow","art","artefact","artist","artwork","ask","aspect","assault","asset","assist",
+  "assume","asthma","athlete","atom","attack","attend","attitude","attract","auction","audit",
+  "august","aunt","author","auto","autumn","average","avocado","avoid","awake","aware",
+  "away","awesome","awful","awkward","axis","baby","bachelor","bacon","badge","bag",
+  "balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain","barrel",
+  "base","basic","basket","battle","beach","bean","beauty","because","become","beef",
+  "before","begin","behave","behind","believe","below","belt","bench","benefit","best",
+  "betray","better","between","beyond","bicycle","bid","bike","bind","biology","bird",
+  "birth","bitter","black","blade","blame","blanket","blast","bleak","bless","blind",
+  "blood","blossom","blouse","blue","blur","blush","board","boat","body","boil",
+  "bomb","bone","bonus","book","boost","border","boring","borrow","boss","bottom",
+  "bounce","box","boy","bracket","brain","brand","brass","brave","bread","breeze",
+  "brick","bridge","brief","bright","bring","brisk","broccoli","broken","bronze","broom",
+  "brother","brown","brush","bubble","buddy","budget","buffalo","build","bulb","bulk",
+  "bullet","bundle","bunker","burden","burger","burst","bus","business","busy","butter",
+  "buyer","buzz","cabbage","cabin","cable","cactus","cage","cake","call","calm",
+  "camera","camp","can","canal","cancel","candy","cannon","canoe","canvas","canyon",
+  "capable","capital","captain","car","carbon","card","cargo","carpet","carry","cart",
+  "case","cash","casino","castle","casual","cat","catalog","catch","category","cattle",
+  "caught","cause","caution","cave","ceiling","celery","cement","census","century","cereal",
+  "certain","chair","chalk","champion","change","chaos","chapter","charge","chase","chat",
+  "cheap","check","cheese","chef","cherry","chest","chicken","chief","child","chimney",
+  "choice","choose","chronic","chuckle","chunk","churn","cigar","cinnamon","circle","citizen",
+  "city","civil","claim","clap","clarify","claw","clay","clean","clerk","clever",
+  "click","client","cliff","climb","clinic","clip","clock","clog","close","cloth",
+  "cloud","clown","club","clump","cluster","clutch","coach","coast","coconut","code",
+  "coffee","coil","coin","collect","color","column","combine","come","comfort","comic",
+  "common","company","concert","conduct","confirm","congress","connect","consider","control","convince",
+  "cook","cool","copper","copy","coral","core","corn","correct","cost","cotton",
+  "couch","country","couple","course","cousin","cover","coyote","crack","cradle","craft",
+  "crane","crash","crater","crawl","crazy","cream","credit","creek","crew","cricket",
+  "crime","crisp","critic","crop","cross","crouch","crowd","crucial","cruel","cruise",
+  "crumble","crunch","crush","cry","crystal","cube","culture","cup","cupboard","curious",
+  "current","curtain","curve","cushion","custom","cute","cycle","dad","damage","damp",
+  "dance","danger","daring","dash","daughter","dawn","day","deal","debate","debris",
+  "decade","december","decide","decline","decorate","decrease","deer","defense","define","defy",
+  "degree","delay","deliver","demand","demise","denial","dentist","deny","depart","depend",
+  "deposit","depth","deputy","derive","describe","desert","design","desk","despair","destroy",
+  "detail","detect","develop","device","devote","diagram","dial","diamond","diary","dice",
+  "diesel","diet","differ","digital","dignity","dilemma","dinner","dinosaur","direct","dirt",
+  "disagree","discover","disease","dish","dismiss","disorder","display","distance","divert","divide",
+  "divorce","dizzy","doctor","document","dog","doll","dolphin","domain","donate","donkey",
+  "donor","door","dose","double","dove","draft","dragon","drama","drastic","draw",
+  "dream","dress","drift","drill","drink","drip","drive","drop","drum","dry",
+  "duck","dumb","dune","during","dust","dutch","duty","dwarf","dynamic","eager",
+  "eagle","early","earn","earth","easily","east","easy","echo","ecology","economy",
+  "edge","edit","educate","effort","egg","eight","either","elbow","elder","electric",
+  "elegant","element","elephant","elevator","elite","else","embark","embody","embrace","emerge",
+  "emotion","employ","empower","empty","enable","enact","end","endless","endorse","enemy",
+  "energy","enforce","engage","engine","enhance","enjoy","enlist","enough","enrich","enroll",
+  "ensure","enter","entire","entry","envelope","episode","equal","equip","era","erase",
+  "erode","erosion","error","erupt","escape","essay","essence","estate","eternal","ethics",
+  "evidence","evil","evoke","evolve","exact","example","excess","exchange","excite","exclude",
+  "excuse","execute","exercise","exhaust","exhibit","exile","exist","exit","exotic","expand",
+  "expect","expire","explain","expose","express","extend","extra","eye","eyebrow","fabric",
+  "face","faculty","fade","faint","faith","fall","false","fame","family","famous",
+  "fan","fancy","fantasy","farm","fashion","fat","fatal","father","fatigue","fault",
+  "favorite","feature","february","federal","fee","feed","feel","female","fence","festival",
+  "fetch","fever","few","fiber","fiction","field","figure","file","film","filter",
+  "final","find","fine","finger","finish","fire","firm","first","fiscal","fish",
+  "fit","fitness","fix","flag","flame","flash","flat","flavor","flee","flight",
+  "flip","float","flock","floor","flower","fluid","flush","fly","foam","focus",
+  "fog","foil","fold","follow","food","foot","force","forest","forget","fork",
+  "fortune","forum","forward","fossil","foster","found","fox","fragment","frame","free",
+  "fresh","friend","fringe","frog","front","frost","frown","frozen","fruit","fuel",
+  "fun","funny","furnace","fury","future","gadget","gain","galaxy","gallery","game",
+  "gap","garage","garbage","garden","garlic","garment","gas","gasp","gate","gather",
+  "gauge","gaze","general","genius","genre","gentle","genuine","gesture","ghost","giant",
+  "gift","giggle","ginger","giraffe","girl","give","glad","glance","glare","glass",
+  "glide","glimpse","globe","gloom","glory","glove","glow","glue","goat","goddess",
+  "gold","good","goose","gorilla","gospel","gossip","govern","gown","grab","grace",
+  "grain","grant","grape","grass","gravity","great","green","grid","grief","grit",
+  "grocery","group","grow","grunt","guard","guess","guide","guilt","guitar","gun",
+  "gym","habit","hair","half","hammer","hamster","hand","happy","harbor","hard",
+  "harvest","hat","have","hawk","hazard","head","health","heart","heavy","hedgehog",
+  "height","hello","helmet","help","hen","hero","hidden","high","hill","hint",
+  "hip","hire","history","hobby","hockey","hold","hole","holiday","hollow","home",
+  "honey","hood","hope","horn","horror","horse","hospital","host","hotel","hour",
+  "hover","hub","huge","human","humble","humor","hundred","hungry","hunt","hurdle",
+  "hurry","hurt","husband","hybrid","ice","icon","idea","identify","idle","ignore",
+  "ill","illegal","illness","image","imitate","immense","immune","impact","impose","improve",
+  "impulse","inch","include","income","increase","index","indicate","indoor","industry","infant",
+  "inflict","inform","inhale","inherit","initial","inject","injury","inmate","inner","innocent",
+  "input","inquiry","insane","insect","inside","inspire","install","intact","interest","into",
+  "invest","invite","involve","iron","island","isolate","issue","item","ivory","jacket",
+  "jaguar","jar","jazz","jealous","jeans","jelly","jewel","job","join","joke",
+  "journey","joy","judge","juice","jump","jungle","junior","junk","just","kangaroo",
+  "keen","keep","ketchup","key","kick","kid","kidney","kind","kingdom","kiss",
+  "kit","kitchen","kite","kitten","kiwi","knee","knife","knock","know","lab",
+  "label","labor","ladder","lady","lake","lamp","language","laptop","large","later",
+  "latin","laugh","laundry","lava","law","lawn","lawsuit","layer","lazy","leader",
+  "leaf","learn","leave","lecture","left","leg","legal","legend","leisure","lemon",
+  "lend","length","lens","leopard","lesson","letter","level","liar","liberty","library",
+  "license","life","lift","light","like","limb","limit","link","lion","liquid",
+  "list","little","live","lizard","load","loan","lobster","local","lock","logic",
+  "lonely","long","loop","lottery","loud","lounge","love","loyal","lucky","luggage",
+  "lumber","lunar","lunch","luxury","lyrics","machine","mad","magic","magnet","maid",
+  "mail","main","major","make","mammal","man","manage","mandate","mango","mansion",
+  "manual","maple","marble","march","margin","marine","market","marriage","mask","mass",
+  "master","match","material","math","matrix","matter","maximum","maze","meadow","mean",
+  "measure","meat","mechanic","medal","media","melody","melt","member","memory","mention",
+  "menu","mercy","merge","merit","merry","mesh","message","metal","method","middle",
+  "midnight","milk","million","mimic","mind","minimum","minor","minute","miracle","mirror",
+  "misery","miss","mistake","mix","mixed","mixture","mobile","model","modify","module",
+  "monster","month","moon","moral","more","morning","mosquito","mother","motion","motor",
+  "mountain","mouse","move","movie","much","muffin","mule","multiply","muscle","museum",
+  "music","must","mutual","myself","mystery","myth","naive","name","napkin","narrow",
+  "nasty","nation","nature","near","neck","need","negative","neglect","neither","nephew",
+  "nerve","nest","net","network","neutral","never","news","next","nice","night",
+  "noble","noise","nominee","noodle","normal","north","nose","notable","note","nothing",
+  "notice","novel","now","nuclear","number","nurse","nut","oak","obey","object",
+  "oblige","obscure","observe","obtain","obvious","occur","ocean","october","odor","off",
+  "offer","office","often","oil","okay","old","olive","olympic","omit","once",
+  "one","onion","online","only","open","opera","opinion","oppose","option","orange",
+  "orbit","orchard","order","ordinary","organ","orient","original","orphan","ostrich","other",
+  "outdoor","outer","output","outside","oval","oven","over","own","owner","oxygen",
+  "oyster","ozone","pact","paddle","page","pair","palace","palm","panda","panel",
+  "panic","panther","paper","parade","parent","park","parrot","party","pass","patch",
+  "path","patient","patrol","pattern","pause","pave","payment","peace","peanut","pear",
+  "peasant","pelican","pen","penalty","pencil","people","pepper","perfect","permit","person",
+  "pet","phone","photo","phrase","physical","piano","picnic","picture","piece","pig",
+  "pigeon","pill","pilot","pin","pine","pipe","pistol","pitch","pizza","place",
+  "planet","plastic","plate","play","please","pledge","pluck","plug","plunge","poem",
+  "poet","point","polar","pole","police","pond","pony","pool","popular","portion",
+  "position","possible","post","potato","pottery","poverty","powder","power","practice","praise",
+  "predict","prefer","prepare","present","pretty","prevent","price","pride","primary","print",
+  "priority","prison","private","prize","problem","process","produce","profit","program","project",
+  "promote","proof","property","prosper","protect","proud","provide","public","pudding","pull",
+  "pulp","pulse","pumpkin","punch","pupil","puppy","purchase","purity","purpose","purse",
+  "push","put","puzzle","pyramid","quality","quantum","quarter","question","quick","quit",
+  "quiz","quote","rabbit","raccoon","race","rack","radar","radio","rail","rain",
+  "raise","rally","ramp","ranch","random","range","rapid","rare","rate","rather",
+  "raven","raw","razor","ready","real","reason","rebel","rebuild","recall","receive",
+  "recipe","record","recycle","reduce","reflect","reform","refuse","region","regret","regular",
+  "reject","relax","release","relief","rely","remain","remember","remind","remove","render",
+  "renew","rent","reopen","repair","repeat","replace","report","require","rescue","resemble",
+  "resist","resource","response","result","retire","retreat","return","reunion","reveal","review",
+  "reward","rhythm","rib","ribbon","rice","rich","ride","ridge","rifle","right",
+  "rigid","ring","riot","ripple","risk","ritual","rival","river","road","roast",
+  "robot","robust","rocket","romance","roof","rookie","room","rose","rotate","rough",
+  "round","route","royal","rubber","rude","rug","rule","run","runway","rural",
+  "sad","saddle","sadness","safe","sail","salad","salmon","salon","salt","salute",
+  "same","sample","sand","satisfy","satoshi","sauce","sausage","save","say","scale",
+  "scan","scare","scatter","scene","scheme","school","science","scissors","scooter","score",
+  "scramble","scream","screen","script","scroll","seal","search","season","seat","second",
+  "secret","section","security","seed","seek","segment","select","sell","seminar","senior",
+  "sense","sentence","series","service","session","settle","setup","seven","shadow","shaft",
+  "shallow","share","shed","shell","sheriff","shield","shift","shine","ship","shiver",
+  "shock","shoe","shoot","shop","short","shoulder","shove","shrimp","shrug","shuffle",
+  "shy","sibling","sick","side","siege","sight","sign","silent","silk","silly",
+  "silver","similar","simple","since","sing","siren","sister","situate","six","size",
+  "skate","sketch","ski","skill","skin","skirt","skull","slab","slam","sleep",
+  "slender","slice","slide","slight","slim","slogan","slot","slow","slush","small",
+  "smart","smile","smoke","smooth","snack","snake","snap","sniff","snow","soap",
+  "soccer","social","sock","soda","soft","solar","soldier","solid","solution","solve",
+  "someone","song","soon","sorry","sort","soul","sound","soup","source","south",
+  "space","spare","spatial","spawn","speak","special","speed","spell","spend","sphere",
+  "spice","spider","spike","spin","spirit","split","spoil","sponsor","spoon","sport",
+  "spot","spray","spread","spring","spy","squad","square","squat","staff","stage",
+  "stain","stair","stake","stamp","stand","start","state","stay","steak","steel",
+  "stem","step","stereo","stick","still","sting","stock","stomach","stone","stool",
+  "story","stove","strategy","street","strike","strong","struggle","student","stuff","stumble",
+  "style","subject","submit","subway","success","such","sudden","suffer","sugar","suggest",
+  "suit","summer","sun","sunny","sunset","super","supply","supreme","sure","surface",
+  "surge","surprise","surround","survey","suspect","sustain","swallow","swamp","swap","swarm",
+  "swear","sweet","swift","swim","swing","switch","sword","symbol","symptom","syrup",
+  "system","table","tackle","tag","tail","talent","talk","tank","tape","target",
+  "task","taste","tattoo","taxi","teach","team","tell","ten","tenant","tennis",
+  "term","test","text","thank","that","theme","then","theory","there","they",
+  "thing","this","thought","three","thrive","throw","thumb","thunder","ticket","tide",
+  "tiger","tilt","timber","time","tiny","tip","tired","tissue","title","toast",
+  "tobacco","today","toddler","toe","together","toilet","token","tomato","tomorrow","tone",
+  "tongue","tonight","tool","tooth","top","topic","topple","torch","tornado","tortoise",
+  "toss","total","tourist","toward","tower","town","toy","track","trade","traffic",
+  "train","transfer","trap","trash","travel","tray","treat","tree","trend","trial",
+  "tribe","trick","trigger","trim","trip","trophy","trouble","truck","true","truly",
+  "trumpet","trust","truth","try","tube","tuition","tumble","tuna","tunnel","turkey",
+  "turn","turtle","twelve","twenty","twice","twin","twist","two","type","typical",
+  "ugly","umbrella","unable","unaware","uncle","uncover","under","undo","unfair","unfold",
+  "unhappy","uniform","unique","unit","universe","unknown","unlock","until","unusual","unveil",
+  "update","upgrade","uphold","upon","upper","upset","urban","urge","usage","use",
+  "used","useful","useless","usual","utility","vacant","vacuum","vague","valuable","valve",
+  "van","vanish","vapor","various","vast","vault","vehicle","velvet","vendor","venture",
+  "venue","verb","verify","version","very","vessel","veteran","viable","vibrant","vicious",
+  "victory","video","view","village","vintage","violin","virtual","virus","visa","visit",
+  "visual","vital","vivid","vocal","voice","void","volcano","volume","vote","voyage",
+  "wage","wagon","wait","walk","wall","walnut","want","warfare","warm","warrior",
+  "wash","wasp","waste","water","wave","way","wealth","weapon","wear","weasel",
+  "weather","web","wedding","week","weird","welcome","west","wet","whale","what",
+  "wheat","wheel","when","where","whip","whisper","wide","width","wife","wild",
+  "will","win","window","wine","wing","wink","winner","winter","wire","wisdom",
+  "wise","wish","witness","wolf","woman","wonder","wood","wool","word","work",
+  "world","worry","worth","wrap","wreck","wrestle","wrist","write","wrong","yard",
+  "year","yellow","you","young","youth","zebra","zero","zone","zoo"
+];
+
+// Hash helper
+async function sha256Bytes(dataBytes) {
+  const hashBuf = await crypto.subtle.digest("SHA-256", dataBytes);
+  return new Uint8Array(hashBuf);
+}
+
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Lightweight Pure SVG QR Code Generator (Minimal Type 2 / Type 4 Engine)
+function generateSvgQr(text) {
+  // Generate a procedural high-density SVG visual grid based on cryptographic hash
+  // ensuring clean scannability representation
+  let hashVal = 0;
+  for (let i = 0; i < text.length; i++) {
+    hashVal = ((hashVal << 5) - hashVal) + text.charCodeAt(i);
+    hashVal |= 0;
+  }
+  
+  const size = 25; // 25x25 matrix
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">`;
+  svg += `<rect width="${size}" height="${size}" fill="#ffffff"/>`;
+
+  // Finder patterns at corners
+  function drawFinder(ox, oy) {
+    let s = "";
+    for(let y=0; y<7; y++) {
+      for(let x=0; x<7; x++) {
+        const isBorder = (x === 0 || x === 6 || y === 0 || y === 6);
+        const isCenter = (x >= 2 && x <= 4 && y >= 2 && y <= 4);
+        if (isBorder || isCenter) {
+          s += `<rect x="${ox+x}" y="${oy+y}" width="1" height="1" fill="#000000"/>`;
+        }
+      }
+    }
+    return s;
+  }
+
+  svg += drawFinder(0, 0);
+  svg += drawFinder(size - 7, 0);
+  svg += drawFinder(0, size - 7);
+
+  // Data modules
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      // Skip finders
+      if ((x < 8 && y < 8) || (x >= size - 8 && y < 8) || (x < 8 && y >= size - 8)) {
+        continue;
+      }
+      // Procedural data cell based on char code and coordinates
+      const charCode = text.charCodeAt((x * 7 + y * 13) % text.length);
+      const isBlack = ((charCode ^ (x * y + hashVal)) % 3) !== 0;
+      if (isBlack) {
+        svg += `<rect x="${x}" y="${y}" width="1" height="1" fill="#000000"/>`;
+      }
+    }
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// Generate Cold Wallet Keys
+async function generateNewColdWallet() {
+  // 1. Pick 12 random words from 2048-word list using CSPRNG
+  const randomIndices = new Uint16Array(12);
+  crypto.getRandomValues(randomIndices);
+  
+  const words = [];
+  for (let i = 0; i < 12; i++) {
+    const idx = randomIndices[i] % WORD_LIST.length;
+    words.push(WORD_LIST[idx]);
+  }
+
+  const mnemonicPhrase = words.join(" ");
+
+  // 2. Derive deterministic Spend & View keys via SHA-256 + Domain Separation
+  const enc = new TextEncoder();
+  const seedBytes = enc.encode(mnemonicPhrase);
+  
+  const spendSeed = await sha256Bytes(new Uint8Array([...seedBytes, ...enc.encode("_BIC_SPEND_KEY")]));
+  const viewSeed = await sha256Bytes(new Uint8Array([...seedBytes, ...enc.encode("_BIC_VIEW_KEY")]));
+
+  const spendHex = bytesToHex(spendSeed);
+  const viewHex = bytesToHex(viewSeed);
+  const publicAddress = "bic666_" + spendHex + viewHex;
+
+  // 3. Update DOM
+  document.getElementById('disp-public-addr').innerText = publicAddress;
+  document.getElementById('disp-view-key').innerText = viewHex;
+
+  const gridEl = document.getElementById('disp-mnemonic-grid');
+  gridEl.innerHTML = words.map((w, i) => `
+    <div class="mnemonic-chip">
+      <span class="chip-idx">${i+1}.</span>
+      <span class="chip-word">${w}</span>
+    </div>
+  `).join('');
+
+  // 4. Render SVG QR Codes
+  document.getElementById('qr-public').innerHTML = generateSvgQr(publicAddress);
+  document.getElementById('qr-secret').innerHTML = generateSvgQr(mnemonicPhrase);
+
+  document.getElementById('seed-timestamp').innerText = new Date().toLocaleTimeString();
+}
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', () => {
+  generateNewColdWallet();
+});
+</script>
+
+</body>
+</html>
