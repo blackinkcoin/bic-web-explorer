@@ -42,6 +42,8 @@ export interface MiningStats {
   anti_sybil_active: boolean;
   active_devices_on_your_ip: number;
   client_ip: string;
+  jackpot_rollover_bic?: number;
+  current_jackpot_bic?: number;
 }
 
 export interface MiningJob {
@@ -55,6 +57,8 @@ export interface MiningJob {
   active_guardians_count: number;
   round_fees_hells: number;
   touch_challenge: number[];
+  jackpot_rollover_bic?: number;
+  lucky_pot_bic?: number;
 }
 
 export interface MiningSubmitResult {
@@ -76,6 +80,9 @@ export interface MiningSubmitResult {
   guardian_payouts?: Array<{ guardian_address: string; fee_hells: number; fee_bic: number }>;
   lucky_winner?: string;
   lucky_amount_bic?: number;
+  jackpot_triggered?: boolean;
+  jackpot_rollover_bic?: number;
+  miners_fee_share_bic?: number;
   miner_ip?: string;
   error?: string;
 }

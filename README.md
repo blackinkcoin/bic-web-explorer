@@ -1,53 +1,32 @@
-# 🌐 Black Ink Coin (BIC) - Explorador Web Oficial y Suite Descentralizada
+# React + TypeScript + Vite
 
-Interfaz de usuario web reactiva de última generación para **Black Ink Coin (BIC)** construida con **React 19, TypeScript, Vite y Tailwind CSS / Cyberpunk Design System**.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
----
+Currently, two official plugins are available:
 
-## ✨ Características Principales
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-1. **Explorador de Bloques en Tiempo Real**:
-   - Visualización de bloques sellados colaborativamente.
-   - Detalle de transacciones blindadas con privacidad ZK (compromisos homomórficos y direcciones sigilosas).
-   - Telemetría de hashrate, dificultad y tiempos de ronda.
+## React Compiler
 
-2. **Seguimiento de "La Rueda de la Fortuna 666"**:
-   - Sueldo Base Minero (70.00% = 4.662 BIC).
-   - Toque de la Suerte 666 (23.34% = 1.554 BIC) con anuncio del ganador por bloque.
-   - Honorarios de los Guardianes (6.66% + 100% de fees).
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-3. **Suite de Billetera Fría (Air-Gapped Cold Wallet)**:
-   - Generador de mnemónicos de 12 palabras + 13ª palabra de aislamiento (paranoia mode).
-   - Derivación criptográfica local Ed25519 en el navegador (100% offline, sin enviar claves a ningún servidor).
+## Expanding the Oxlint configuration
 
-4. **Soporte Multi-Idioma**:
-   - 10 idiomas conmutables al instante (Español, Inglés, Francés, Alemán, Portugués, Ruso, Árabe, Chino, Japonés, Hindi).
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-5. **Portal de Descargas Oficial**:
-   - Minero de escritorio para Windows, Linux y macOS.
-   - Firmware para microcontroladores ESP32 WiFi.
-
----
-
-## 🛠️ Instalación y Desarrollo Local
-
-### Requisitos:
-- Node.js 18+ o superior.
-- npm o pnpm.
-
-### Instrucciones:
-```bash
-# Instalar dependencias
-npm install
-
-# Iniciar servidor de desarrollo en http://localhost:5173
-npm run dev
-
-# Compilar para producción
-npm run build
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
----
-
-## 📄 Licencia
-MIT License. Desarrollado para el ecosistema Black Ink Coin.
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
