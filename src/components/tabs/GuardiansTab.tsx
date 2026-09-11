@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Coins, 
@@ -10,10 +10,13 @@ import {
   Terminal,
   ExternalLink,
   Lock,
-  Activity
+  Activity,
+  Network,
+  Users
 } from 'lucide-react';
 import { Language, translations } from '../../i18n/translations';
-import { NetworkInfo, MiningStats } from '../../types/bic';
+import { NetworkInfo, MiningStats, GuardianNodeItem } from '../../types/bic';
+import { bicRpc } from '../../services/bicRpc';
 import { sound } from '../../utils/audio';
 import { copyToClipboard } from '../../utils/clipboard';
 
@@ -38,6 +41,28 @@ export const GuardiansTab: React.FC<GuardiansTabProps> = ({
 
   const [copied, setCopied] = useState(false);
   const [copiedEndpoint, setCopiedEndpoint] = useState(false);
+  const [copiedSwarmAddr, setCopiedSwarmAddr] = useState<string | null>(null);
+  const [guardiansList, setGuardiansList] = useState<GuardianNodeItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSwarm = async () => {
+      try {
+        const res = await bicRpc.getGuardians();
+        if (isMounted && res.guardians && res.guardians.length > 0) {
+          setGuardiansList(res.guardians);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    fetchSwarm();
+    const timer = setInterval(fetchSwarm, 4000);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
+  }, [networkInfo?.active_guardians_count]);
 
   const copyAddress = async () => {
     await copyToClipboard(currentGuardianAddress);
@@ -153,6 +178,119 @@ export const GuardiansTab: React.FC<GuardiansTabProps> = ({
           <span className="text-[10px] text-neon-green px-2 py-0.5 rounded bg-neon-green/10 border border-neon-green/30 shrink-0 self-start sm:self-auto">
             ● PUERTO RPC 6660 ACTIVO
           </span>
+        </div>
+      </div>
+
+      {/* Live Swarm of Connected Guardian Nodes */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-neon-purple/50 shadow-card-glow space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+          <div className="space-y-1">
+            <h2 className="font-orbitron text-xl font-bold text-white flex items-center gap-2">
+              <Users className="w-5 h-5 text-neon-purple" />
+              Swarm P2P de Nodos Guardianes Activos
+            </h2>
+            <p className="text-gray-300 text-xs sm:text-sm">
+              Nodos validadores de la red L1 conectados y autenticados criptográficamente en el puerto 6666.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neon-purple/20 border border-neon-purple/40 text-neon-purple text-xs font-mono font-bold self-start sm:self-auto">
+            <Network className="w-3.5 h-3.5 animate-pulse" />
+            <span>{Math.max(activeCount, guardiansList.length || 1)} GUARDIÁN{Math.max(activeCount, guardiansList.length || 1) > 1 ? 'ES' : ''} ACTIVO{Math.max(activeCount, guardiansList.length || 1) > 1 ? 'S' : ''}</span>
+          </div>
+        </div>
+
+        {/* Multi-guardian consortium indicator */}
+        {Math.max(activeCount, guardiansList.length) > 1 ? (
+          <div className="p-4 rounded-2xl bg-neon-green/10 border border-neon-green/30 flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-neon-green shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="font-orbitron text-xs sm:text-sm font-bold text-white">
+                CONSORCIO P2P 50/50 ACTIVO Y OPERATIVO
+              </div>
+              <div className="text-gray-300 text-xs leading-relaxed">
+                El Swarm está descentralizado con múltiples guardianes. Cada bloque distribuye equitativamente el 6.66% de emisión fija y el 100% de las comisiones entre todos los nodos validadores activos ({((1 / Math.max(activeCount, 1)) * 100).toFixed(1)}% a cada uno).
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-3">
+            <Activity className="w-5 h-5 text-neon-cyan shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <div className="font-orbitron text-xs sm:text-sm font-bold text-white">
+                NODO GUARDIÁN PRIMARIO ACTIVO (ESPERANDO PEERS P2P)
+              </div>
+              <div className="text-gray-300 text-xs leading-relaxed">
+                Al arrancar tu propio nodo guardián en tu PC (<code className="text-neon-green">./iniciar_guardian.sh</code>), este se sincronizará por P2P (puerto 6666) y se unirá automáticamente a esta lista activando el reparto de Consorcio 50/50.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Guardian Cards List */}
+        <div className="space-y-3">
+          {(guardiansList.length > 0 ? guardiansList : [
+            {
+              address: currentGuardianAddress,
+              is_local: true,
+              role: 'Nodo Validador Primario (Mini-Servidor X88)',
+              share_percentage: 100.0,
+              status: 'online'
+            }
+          ]).map((guardian, idx) => {
+            const isCopied = copiedSwarmAddr === guardian.address;
+            const isServerNode = guardian.address === currentGuardianAddress || guardian.is_local;
+            const share = (100 / Math.max(activeCount, guardiansList.length || 1)).toFixed(1);
+
+            return (
+              <div 
+                key={guardian.address || idx}
+                className="p-4 rounded-2xl bg-black/60 border border-white/10 hover:border-neon-purple/40 transition-all space-y-3"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-neon-green animate-pulse" />
+                    <span className="font-orbitron font-bold text-white text-xs sm:text-sm">
+                      {isServerNode ? 'Nodo Validador Primario (Servidor X88)' : `Nodo Guardián Swarm #${idx + 1} (PC Local)`}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-neon-purple/20 text-neon-purple border border-neon-purple/30">
+                      {isServerNode ? 'SEED L1' : 'P2P PEER'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-neon-gold bg-neon-gold/10 px-2.5 py-1 rounded-lg border border-neon-gold/30">
+                      {share}% CUOTA DEL POZO
+                    </span>
+                    <span className="text-xs font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded border border-neon-green/30">
+                      ● ONLINE
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-black/80 border border-white/5 flex items-center justify-between gap-2 font-mono text-[11px] text-gray-300">
+                  <span className="break-all select-all">{guardian.address}</span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await copyToClipboard(guardian.address);
+                      setCopiedSwarmAddr(guardian.address);
+                      sound.playClick();
+                      setTimeout(() => setCopiedSwarmAddr(null), 2000);
+                    }}
+                    className="shrink-0 p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-neon-cyan hover:text-white transition-all cursor-pointer"
+                    title="Copiar dirección"
+                  >
+                    {isCopied ? <Check className="w-3.5 h-3.5 text-neon-green" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+
+                <div className="text-[11px] text-gray-400 font-mono flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5">
+                  <span>Validación BFT 1.666s • Criptografía RingCT • Firma de Bloques</span>
+                  <span className="text-neon-gold font-mono">Emisión: {(guardianEmissionShare).toFixed(4)} BIC/bloque</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

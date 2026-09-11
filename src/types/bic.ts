@@ -12,11 +12,27 @@ export interface NetworkInfo {
   total_burned_fees_hells: number;
   total_burned_fees_bic: number;
   active_guardians_count: number;
+  active_guardians?: string[];
   guardian_address?: string;
   total_transactions: number;
   mempool_pending: number;
   block_time_ms: number;
   privacy_mode: string;
+}
+
+export interface GuardianNodeItem {
+  address: string;
+  is_local: boolean;
+  role: string;
+  share_percentage: number;
+  status: string;
+}
+
+export interface GuardiansResponse {
+  status: string;
+  active_guardians_count: number;
+  local_guardian_address: string;
+  guardians: GuardianNodeItem[];
 }
 
 export interface MiningStats {

@@ -92,6 +92,27 @@ export const bicRpc = {
     }
   },
 
+  async getGuardians(): Promise<import('../types/bic').GuardiansResponse> {
+    try {
+      return await fetchRpc<import('../types/bic').GuardiansResponse>('/api/guardians');
+    } catch {
+      return {
+        status: 'fallback',
+        active_guardians_count: 1,
+        local_guardian_address: 'bic666_5cb78c4a47eed4bca2b3d7dec5bf451cdce2631df4b86b84786b51eb38f884218aa98a8074f0b257b082b8e3d79df0c21a7f0257574e2be3d7a454650008167b',
+        guardians: [
+          {
+            address: 'bic666_5cb78c4a47eed4bca2b3d7dec5bf451cdce2631df4b86b84786b51eb38f884218aa98a8074f0b257b082b8e3d79df0c21a7f0257574e2be3d7a454650008167b',
+            is_local: true,
+            role: 'Nodo Validador Local',
+            share_percentage: 100.0,
+            status: 'online',
+          }
+        ]
+      };
+    }
+  },
+
   async getMiningStats(): Promise<MiningStats> {
     try {
       return await fetchRpc<MiningStats>('/api/mining/stats');
